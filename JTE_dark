@@ -1,0 +1,232 @@
+GO victorydevice simflags="-P 2"
+#non revision
+#Ge 1.0 SiChar 0.08 Simul 0.8 SiInter 0.1 SiBott 0.4
+set filename=apd_JTE_dark_d6_5_oxide
+#base thickness
+set Ge=1.0
+set SiChar=0.08
+set SiMul=0.8
+set SiInter=0.1
+set SiBott=0.4
+
+#param sweep(Ge interface) 1e-10, 1e16, well 3e-10 5e15
+#set tauGeInt=3e-10
+#set NtrapGeInt=1e15
+
+#param sweep(Si interface) 5e15, 0.08 well
+#set NtrapSiInt=1e15
+
+#edge termination / field plate parameters
+#set GRw=0.30		#lateral guard/JTE width			0.2~0.5
+#set tox=0.1		#passivation oxide thickness for field plate	0.05~0.2
+#set FPext=0.40		#field plate extension beyond mesa edge		0.3~0.6
+
+#JTE doping
+set N_JTE=6e16		#p-type in JTE region(e16~e17)
+
+
+#### STRUCTURE SPECIFICATION ####
+mesh space.mult=1.0
+
+x.mesh loc=0.0 		spac=0.40
+x.mesh loc=0.40		spac=0.20
+x.mesh loc=0.95		spac=0.01
+x.mesh loc=0.98		spac=0.008
+x.mesh loc=1.0 		spac=0.005
+x.mesh loc=1.02		spac=0.008
+x.mesh loc=1.05		spac=0.01
+x.mesh loc=1.30		spac=0.05
+x.mesh loc=2.0		spac=0.08
+x.mesh loc=2.70		spac=0.05
+x.mesh loc=2.95		spac=0.01
+x.mesh loc=2.98		spac=0.008
+x.mesh loc=3.0 		spac=0.005
+x.mesh loc=3.02		spac=0.008
+x.mesh loc=3.05		spac=0.01
+x.mesh loc=3.60		spac=0.20
+x.mesh loc=4.0 		spac=0.40
+
+#y.mesh loc=-$tox					spac=0.01
+#y.mesh loc=-$tox/2					spac=0.01
+#y.mesh loc=-0.005					spac=0.008
+y.mesh loc=-0.25						spac=0.1
+y.mesh loc=0.0 						spac=0.01
+y.mesh loc=0.02						spac=0.01
+y.mesh loc=0.05						spac=0.01
+y.mesh loc=0.50						spac=0.01
+y.mesh loc=0.90						spac=0.01
+y.mesh loc=$Ge-0.02					spac=0.008
+y.mesh loc=$Ge						spac=0.004
+y.mesh loc=$Ge+0.01					spac=0.004
+y.mesh loc=$Ge+$SiChar					spac=0.005
+y.mesh loc=$Ge+$SiChar+0.01				spac=0.006
+y.mesh loc=1.40						spac=0.008
+y.mesh loc=1.70						spac=0.01
+y.mesh loc=$Ge+$SiChar+$SiMul-0.02			spac=0.008
+y.mesh loc=$Ge+$SiChar+$SiMul 				spac=0.004
+y.mesh loc=$Ge+$SiChar+$SiMul+$SiInter 			spac=0.012
+y.mesh loc=$Ge+$SiChar+$SiMul+$SiInter+$SiBott 		spac=0.05
+
+
+
+#Side oxide trench around Ge(only down to Ge thickness)
+region num=1 material=SiO2 x.min=0.0 x.max=1.0 y.min=-0.25 y.max=$Ge
+region num=7 material=SiO2 x.min=3.0 x.max=4.0 y.min=-0.25 y.max=$Ge
+
+#Ge mesa
+region num=2 material=Germanium x.min=1.0 x.max=3.0 y.min=0.0 y.max=$Ge
+
+#Central Si stack Ge
+region num=3 material=Silicon x.min=1.0 x.max=3.0 y.min=$Ge y.max=$Ge+$SiChar
+region num=4 material=Silicon x.min=1.0 x.max=3.0 y.min=$Ge+$SiChar y.max=$Ge+$SiChar+$SiMul
+region num=5 material=Silicon x.min=1.0 x.max=3.0 y.min=$Ge+$SiChar+$SiMul y.max=$Ge+$SiChar+$SiMul+$SiInter
+
+#Side Si extensions(this enables JTE/guard ring behavior in 2D)
+region num=8 material=Silicon x.min=0.0 x.max=1.0 y.min=$Ge y.max=$Ge+$SiChar
+region num=9 material=Silicon x.min=0.0 x.max=1.0 y.min=$Ge+$SiChar y.max=$Ge+$SiChar+$SiMul
+region num=10 material=Silicon x.min=0.0 x.max=1.0 y.min=$Ge+$SiChar+$SiMul y.max=$Ge+$SiChar+$SiMul+$SiInter
+
+region num=11 material=Silicon x.min=3.0 x.max=4.0 y.min=$Ge y.max=$Ge+$SiChar
+region num=12 material=Silicon x.min=3.0 x.max=4.0 y.min=$Ge+$SiChar y.max=$Ge+$SiChar+$SiMul
+region num=13 material=Silicon x.min=3.0 x.max=4.0 y.min=$Ge+$SiChar+$SiMul y.max=$Ge+$SiChar+$SiMul+$SiInter
+
+#Bottom substrate
+region num=6 material=Silicon x.min=0.0 x.max=4.0 y.min=$Ge+$SiChar+$SiMul+$SiInter y.max=$Ge+$SiChar+$SiMul+$SiInter+$SiBott
+
+region num=18 material=SiO2 x.min=1.0 x.max=1.95 y.min=-0.25 y.max=0.0
+region num=19 material=SiO2 x.min=2.05 x.max=3.0 y.min=-0.25 y.max=0.0
+region num=20 material=conductor x.min=1.95 x.max=2.05 y.min=-0.25 y.max=0.0
+
+#anode:direct contact on Ge
+electrode name=anode region=20
+#field plate extension
+#electrode name=anode x.min=1.0-$FPext 	x.max=1.0 		y.min=-$tox y.max=-$tox
+#electrode name=anode x.min=3.0 		x.max=3.0+$FPext 	y.min=-$tox y.max=-$tox
+#cathode
+electrode name=cathode x.min=0.0 x.max=4.0 y.min=$Ge+$SiChar+$SiMul+$SiInter+$SiBott  y.max=$Ge+$SiChar+$SiMul+$SiInter+$SiBott 
+
+
+#doping
+doping region=2 p.type conc=0.3e16 uniform
+doping region=3 p.type conc=1.6e17 uniform
+doping region=4 p.type conc=1e15 uniform
+doping region=5 n.type conc=5e17 uniform
+doping region=6 n.type conc=1e19 uniform
+
+#JTE/guard in side charge extension
+doping region=8 p.type conc=$N_JTE uniform
+doping region=11 p.type conc=$N_JTE uniform
+
+#side multiplication extension
+#baseline either low-doped or same as region4/5
+doping region=9 p.type conc=1e15 uniform
+doping region=12 p.type conc=1e15 uniform
+
+#side interlayer extension(same or lower for edge relief)
+doping region=10 n.type conc=5e16 uniform
+doping region=13 n.type conc=5e16 uniform
+
+
+
+#Bulktrap
+#trap region=2 acceptor density=3e14 e.level=0.33 degen=1 sign=1e-15 sigp=1e-15 x.min=1 x.max=3 y.min=0 y.max=0.99
+#trap region=3 acceptor density=8e13 e.level=0.56 degen=1 sign=5e-16 sigp=5e-16 x.min=1 x.max=3 y.min=1.01 y.max=1.08
+#trap region=4 acceptor density=5e13 e.level=0.56 degen=1 sign=5e-16 sigp=5e-16
+
+#interface trap
+#inttrap acceptor e.level=0.25 density=1e9 degen=1 x.minimum=1.0 x.maximum=3.0 y.minimum=0.999 y.maximum=1.001 sign=1e-17 sigp=1e-17
+
+#qtx.mesh loc=1.00			spac=0.008
+#qtx.mesh loc=1.05			spac=0.010
+
+#qty.mesh loc=$Ge-0.01 			spac=0.004
+#qty.mesh loc=$Ge 				spac=0.003
+#qty.mesh loc=$Ge+0.01 			spac=0.003
+#qty.mesh loc=$Ge-0.04 			spac=0.004
+#qty.mesh loc=$Ge+$SiChar 		spac=0.004
+#qty.mesh loc=$Ge+$SiChar+0.2		spac=0.008
+#qty.mesh loc=$Ge+$SiChar+0.4 		spac=0.010
+#qty.mesh loc=$Ge+$SiChar+0.6 		spac=0.010
+#qty.mesh loc=$Ge+$SiChar+$SiMul 	spac=0.008
+
+#qtx.mesh loc=2.95			spac=0.010
+#qtx.mesh loc=3.00			spac=0.008
+
+material region=2 permitti=16.0 taun=3e-9 taup=3e-9
+
+
+models srh auger fldmob conmob fermi incomplete print #lat.temp heat.full #bbt.hurkx tat.nonlocal tat.nldepth=0.15 tat.relei=1 print
+#tat.nldepth=0.2 tat.relei
+#thermcontact num=1 x.min=0 x.max=4.0 y.min=2.38 y.max=2.38 ext.temper=300
+impact material=Silicon selb	an1=9e5 ap1=1.58e6 bn1=1.231e6 bp1=2.036e6
+impact material=Germanium selb 	an2=5.9e5 ap2=2.6e5 bn2=7.9e5 bp2=7.1e5
+
+probe name=Emax field dir=90 x=2.0 y=$Ge/2
+probe name=E_line field dir=90 x=2.0
+probe name=Gimpact generation x=2.0 y=$Ge+$SiChar+0.4
+
+method newton climit=1e-5 maxtrap=25 itlimit=30 
+
+output e.field j.total u.srh impact band.param 
+
+#probe field dir=90 x=0 y=1.5
+#probe vel.electron x=0 y=1.5
+#probe vel.hole x=0 y=1.5
+#probe generation x=0 y=1.5
+
+
+#### SOLUTION SOLVING #### 
+# Dark and Light I-V Characteristics
+SOLVE init
+
+#LOG outfile=$'filename'_dark.log
+LOG outfile="$filename".log
+
+SOLVE vanode=0.0
+
+SOLVE vanode=-0.005 	
+SOLVE vanode=-0.010	
+SOLVE vanode=-0.020	
+SOLVE vanode=-0.050	
+SOLVE vanode=-0.100	
+SOLVE vanode=-0.200	
+SOLVE vanode=-0.300	
+SOLVE vanode=-0.400	
+SOLVE vanode=-0.500
+
+SOLVE vstep=-0.10 vfinal=-1.0 	name=anode
+SAVE outf="{$filename}_V-1".str
+SOLVE vstep=-0.10 vfinal=-3.0 	name=anode
+SAVE outf="{$filename}_V-3".str
+SOLVE vstep=-0.25 vfinal=-5.0 	name=anode
+SAVE outf="{$filename}_V-5".str
+SOLVE vstep=-0.25 vfinal=-7.0 	name=anode
+SAVE outf="{$filename}_V-7".str
+SOLVE vstep=-0.20 vfinal=-10.0 	name=anode
+SAVE outf="{$filename}_V-10".str
+SOLVE vstep=-0.20 vfinal=-12.0 	name=anode
+SAVE outf="{$filename}_V-12".str
+SOLVE vstep=-0.25 vfinal=-15.0 	name=anode
+SAVE outf="{$filename}_V-15".str
+
+
+SOLVE vstep=-1.0 vfinal=-20.0 	name=anode
+SAVE outf="{$filename}_V-20".str
+SOLVE vstep=-1.0 vfinal=-25.0 	name=anode
+SAVE outf="{$filename}_V-25".str
+SOLVE vstep=-1.0 vfinal=-30.0 	name=anode
+SAVE outf="{$filename}_V-30".str
+SOLVE vstep=-1.0 vfinal=-40.0 	name=anode
+SAVE outf="{$filename}_V-40".str
+SOLVE vstep=-1.0 vfinal=-45.0 	name=anode
+SAVE outf="{$filename}_V-45".str
+SOLVE vstep=-0.2 vfinal=-48.0 	name=anode
+SAVE outf="{$filename}_V-48".str
+SOLVE vstep=-0.2 vfinal=-50.0	name=anode
+
+
+
+LOG off
+
+
+QUIT
