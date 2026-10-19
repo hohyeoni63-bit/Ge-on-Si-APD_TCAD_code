@@ -1,1 +1,154 @@
+GO victorydevice simflags="-P 2"
+#non revision
+#Ge 1.0 SiChar 0.08 Simul 0.8 SiInter 0.1 SiBott 0.4
+set filename=apd_core_dark_Ge0.3_Char1.6_oxide
+#base thickness
+set Ge=1.0
+set SiChar=0.08
+set SiMul=0.8
+set SiInter=0.1
+set SiBott=0.4
 
+#param sweep(Ge interface) 1e-10, 1e16, well 3e-10 5e15
+#set tauGeInt=3e-10
+#set NtrapGeInt=1e15
+
+#param sweep(Si interface) 5e15, 0.08 well
+#set NtrapSiInt=1e15
+
+
+#### STRUCTURE SPECIFICATION ####
+mesh space.mult=1.0
+
+x.mesh loc=0.0 		spac=0.40
+x.mesh loc=0.40		spac=0.20
+x.mesh loc=0.95		spac=0.01
+x.mesh loc=0.98 	spac=0.008	
+x.mesh loc=1.0 		spac=0.005
+x.mesh loc=1.02		spac=0.008
+x.mesh loc=1.05		spac=0.01
+x.mesh loc=1.30		spac=0.05
+x.mesh loc=2.0		spac=0.08
+x.mesh loc=2.70		spac=0.05
+x.mesh loc=2.95		spac=0.01
+x.mesh loc=2.98		spac=0.008
+x.mesh loc=3.0 		spac=0.005
+x.mesh loc=3.02		spac=0.008
+x.mesh loc=3.05		spac=0.01
+x.mesh loc=3.60		spac=0.20
+x.mesh loc=4.0 		spac=0.40
+
+y.mesh loc=-0.25					spac=0.1
+y.mesh loc=0.0 						spac=0.05
+y.mesh loc=$Ge						spac=0.01
+y.mesh loc=$Ge+$SiChar					spac=0.008
+y.mesh loc=$Ge+$SiChar+$SiMul 				spac=0.008
+y.mesh loc=$Ge+$SiChar+$SiMul+$SiInter 			spac=0.05
+y.mesh loc=$Ge+$SiChar+$SiMul+$SiInter+$SiBott 		spac=0.1
+
+region num=1 material=SiO2 	x.min=0.0 x.max=1.0 y.min=-0.25 			y.max=$Ge+$SiChar+$SiMul+$SiInter
+region num=3 material=Germanium x.min=1.0 x.max=3.0 y.min=0.0			y.max=$Ge
+region num=4 material=Silicon x.min=1.0 x.max=3.0 y.min=$Ge 	y.max=$Ge+$SiChar	
+region num=5 material=Silicon x.min=1.0 x.max=3.0 y.min=$Ge+$SiChar	y.max=$Ge+$SiChar+$SiMul
+region num=6 material=Silicon x.min=1.0 x.max=3.0 y.min=$Ge+$SiChar+$SiMul 	 y.max=$Ge+$SiChar+$SiMul+$SiInter
+region num=7 material=Silicon x.min=0.0 x.max=4.0 y.min=$Ge+$SiChar+$SiMul+$SiInter y.max=$Ge+$SiChar+$SiMul+$SiInter+$SiBott
+region num=2 material=SiO2 x.min=3.0 x.max=4.0 y.min=-0.25 y.max=$Ge+$SiChar+$SiMul+$SiInter
+region num=8 material=SiO2 x.min=1.0 x.max=1.95 y.min=-0.25 y.max=0.0
+region num=9 material=SiO2 x.min=2.05 x.max=3.0 y.min=-0.25 y.max=0.0
+region num=10 material=conductor x.min=1.95 x.max=2.05 y.min=-0.25 y.max=0.0
+
+electrode name=anode region=10
+#electrode name=anode x.min=1.05 x.max=1.3 y.min=0.0 y.max=0.0
+#electrode name=anode x.min=2.70 x.max=2.95 y.min=0.0 y.max=0.0
+electrode name=cathode x.min=0.0 x.max=4.0 y.min=$Ge+$SiChar+$SiMul+$SiInter+$SiBott  y.max=$Ge+$SiChar+$SiMul+$SiInter+$SiBott 
+
+doping region=3 p.type conc=0.3e16 uniform
+doping region=4 p.type conc=1.6e17 uniform
+doping region=5 p.type conc=1e15 uniform
+doping region=6 n.type conc=5e17 uniform
+doping region=7 n.type conc=1e19 uniform
+
+#Bulktrap
+#trap region=2 acceptor density=3e14 e.level=0.33 degen=1 sign=1e-15 sigp=1e-15 x.min=1 x.max=3 y.min=0 y.max=0.99
+#trap region=3 acceptor density=8e13 e.level=0.56 degen=1 sign=5e-16 sigp=5e-16 x.min=1 x.max=3 y.min=1.01 y.max=1.08
+#trap region=4 acceptor density=5e13 e.level=0.56 degen=1 sign=5e-16 sigp=5e-16
+
+#additrap
+#trap region=2 acceptor density=$NtrapGeInt e.level=0.33 degen=1 sign=1e-15 sigp=1e-15 x.min=1 x.max=3 y.min=0.99 y.max=1.00
+#trap region=3 acceptor density=$NtrapSiInt e.level=0.33 degen=1 sign=1e-15 sigp=1e-15 x.min=1 x.max=3 y.min=1.00 y.max=1.01
+
+#qtx.mesh loc=1.9 spac=0.02
+#qtx.mesh loc=2.1 spac=0.02
+#qty.mesh loc=1.3 spac=0.01
+#qty.mesh loc=1.7 spac=0.01
+
+material region=3 permitti=16.0 taun=3e-9 taup=3e-9
+
+models srh auger fldmob conmob fermi incomplete print
+
+impact material=Silicon selb	an1=9e5 ap1=1.58e6 bn1=1.231e6 bp1=2.036e6
+impact material=Germanium selb 	an2=5.9e5 ap2=2.6e5 bn2=7.9e5 bp2=7.1e5
+
+probe name=Emax field dir=90 x=2.0 y=$Ge/2
+probe name=E_line field dir=90 x=2.0
+probe name=Gimpact generation x=2.0 y=$Ge+$SiChar+0.4
+
+method newton climit=1e-5 maxtrap=25 itlimit=30
+
+output e.field j.total u.trap u.bbt u.srh impact band.param
+#PROBE field dir=90 x=0 y=1.5
+#PROBE vel.electron x=0 y=1.5
+#PROBE vel.hole x=0 y=1.5
+#PROBE generation x=0 y=1.5
+
+
+#### SOLUTION SOLVING #### 
+# Dark and Light I-V Characteristics
+SOLVE init
+
+
+#LOG outfile=$'filename'_dark.log
+LOG outfile="$filename".log
+
+SOLVE vanode=-0.005 	
+SOLVE vanode=-0.010	
+SOLVE vanode=-0.020	
+SOLVE vanode=-0.050	
+SOLVE vanode=-0.100	
+SOLVE vanode=-0.200	
+SOLVE vanode=-0.300	
+SOLVE vanode=-0.400	
+SOLVE vanode=-0.500
+
+SOLVE vstep=-0.10 vfinal=-1.0 name=anode
+SAVE  outf="{$filename}_V-1".str
+SOLVE vstep=-0.10 vfinal=-3.0 name=anode
+SAVE outf="{$filename}_V-3".str
+SOLVE vstep=-0.25 vfinal=-5.0 name=anode
+SAVE outf="{$filename}_V-5".str
+SOLVE vstep=-0.25 vfinal=-7.0 name=anode
+SAVE outf="{$filename}_V-7".str
+SOLVE vstep=-0.20 vfinal=-10.0 name=anode
+SAVE outf="{$filename}_V-10".str
+SOLVE vstep=-0.20 vfinal=-12.0 name=anode
+SAVE outf="{$filename}_V-12".str
+SOLVE vstep=-0.25 vfinal=-15.0 name=anode
+SAVE outf="{$filename}_V-15".str
+
+SOLVE vstep=-1.0 vfinal=-20.0 name=anode
+SAVE outf="{$filename}_V-20".str
+SOLVE vstep=-1.0 vfinal=-25.0 name=anode
+SAVE outf="{$filename}_V-25".str
+SOLVE vstep=-1.0 vfinal=-30.0 name=anode
+SAVE outf="{$filename}_V-30".str
+SOLVE vstep=-1.0 vfinal=-40.0 name=anode
+SAVE outf="{$filename}_V-40".str
+SOLVE vstep=-1.0 vfinal=-45.0 name=anode
+SAVE outf="{$filename}_V-45".str
+SOLVE vstep=-1.0 vfinal=-50.0 name=anode
+
+
+LOG off
+
+
+QUIT
